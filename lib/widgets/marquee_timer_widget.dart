@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+//定时器加ValueNotifier实现，拖拽有问题
 class MarqueeTimerWidget extends StatefulWidget {
   final String text;
   final TextStyle textStyle;

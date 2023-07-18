@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+//动画实现,拖拽有问题
 class MarqueeWidget extends StatefulWidget {
   final String text;
   final TextStyle textStyle;
   final int scrollSpeed;
   final bool enableScroll;
 
-  const MarqueeWidget({Key? key,required this.text,required this.textStyle, this.scrollSpeed=3000, this.enableScroll=true,}) : super(key: key);
+  const MarqueeWidget({Key? key,required this.text,required this.textStyle, this.scrollSpeed=40, this.enableScroll=true,}) : super(key: key);
 
   @override
   State<MarqueeWidget> createState() => _MarqueeWidgetState();
@@ -17,32 +18,37 @@ class _MarqueeWidgetState extends State<MarqueeWidget> with SingleTickerProvider
   late AnimationController controller;
   Tween<double> tween=Tween(begin: 0.0,end: 0.0);
   GlobalKey globalKey=GlobalKey();
+  late Size textSize;
+  late Size newTextSize;
+  String newText="";
+  double _maxWidth=0;
 
   @override
   void initState() {
     super.initState();
+    textSize=_getTextSize(widget.text,widget.textStyle);
+    tween.end=-textSize.width;
     controller=AnimationController(
         vsync: this,
-        duration: Duration(milliseconds:widget.scrollSpeed)
+        duration: Duration(milliseconds:(textSize.width/(widget.scrollSpeed/1000)).ceil()),
     );
     animation=tween.animate(controller);
     // addListener： 每一帧都会调用，调用之后一般使用setState来刷新界面
+    animation.addListener(() {
+      debugPrint("animation.value=${animation.value}");
+      debugPrint("controller.value=${controller.value}");
+    });
     // addStatusListener：监听动画当前的状态 如动画开始、结束、正向或反向
     animation.addStatusListener((status) {
       debugPrint('status $status');
       switch (status){
-      //动画一开始就停止了
         case AnimationStatus.dismissed:
           break;
-      //动画从头到尾都在播放
         case AnimationStatus.forward:
           break;
-      //动画从结束到开始倒着播放
         case AnimationStatus.reverse:
           break;
-      //动画播放完停止
         case AnimationStatus.completed:
-          controller.repeat();
           break;
       };
     });
@@ -60,9 +66,9 @@ class _MarqueeWidgetState extends State<MarqueeWidget> with SingleTickerProvider
     //LayoutBuilder用来获取最大可滚动范围
     return LayoutBuilder(
       builder: (context, constraints){
-        Size size=_getTextSize(widget.text,widget.textStyle);
-        tween.begin=constraints.maxWidth;
-        tween.end=-size.width;
+        _maxWidth=constraints.maxWidth;
+        newText=generateNewText();
+        newTextSize=_getTextSize(newText,widget.textStyle);
         //AnimatedBuilder用来刷新包裹的widget
         return AnimatedBuilder(
           animation: animation,
@@ -79,24 +85,15 @@ class _MarqueeWidgetState extends State<MarqueeWidget> with SingleTickerProvider
                 ],
               ),
               onHorizontalDragDown: (detail){
-                // controller.stop(canceled:false);
               },
               onHorizontalDragUpdate: (detail){
-                DragUpdateDetails updateDetails=detail;
-                double a=animation.value+updateDetails.delta.dx;
-                debugPrint("controller.value=${controller.value}");
-                debugPrint("animation.value=${animation.value}");
-                // controller.value=a;
-                // controller.forward(from: a);
-                // debugPrint("updateDetails.localPosition.dx=${updateDetails.delta.dx}");
               },
               onHorizontalDragEnd: (detail){
-                // controller.forward();
               },
             );
           },
           child: Text(
-            widget.text,
+            newText,
             style: widget.textStyle,
             overflow: TextOverflow.clip,
             softWrap: false,
@@ -104,6 +101,13 @@ class _MarqueeWidgetState extends State<MarqueeWidget> with SingleTickerProvider
         );
       },
     );
+  }
+
+  String generateNewText(){
+    int i=(_maxWidth/textSize.width).ceil();
+    String a=widget.text*i;
+    debugPrint("widget.text+a=${widget.text+a}");
+    return widget.text+a;
   }
 
   //获取text的size
