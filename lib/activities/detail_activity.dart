@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:my_practice/widgets/marquee_widget.dart';
 
+import '../widgets/marquee_timer_widget.dart';
+
 
 
 class DetailsScreen extends StatelessWidget {
@@ -36,7 +38,10 @@ class DetailsScreen extends StatelessWidget {
               margin: EdgeInsets.only(top: 100,left: 50,right: 50,bottom: 100),
               color: Colors.black,
               child: MarqueeWidget(
-                text: "拉萨北京爱",
+                enableScroll: true,
+                gaspSpace: 10,
+                beganSpace: 100,
+                text: "拉萨北京爱丽丝巴斯克贝拉发表labs地方labs的发表喇叭发生了比较",
                 textStyle: TextStyle(color: Colors.white,fontSize: 16),
               ),
             )
